@@ -28,7 +28,12 @@ class LoggingDecorator(DecoratorMixin):
     def log(logger, log_level, msg):
         logger.log(log_level, msg)
 
-    def get_logger(self, fn):
+    def get_logger(self, fn, **kwargs):
+        if isinstance(self._logger, str):
+            if self._logger not in kwargs:
+                raise ValueError(f"Unable to find keyword '{self._logger}'"
+                                  " in function arguments for logger.")
+            self._logger = kwargs.get(self._logger, None)
         if self._logger is None:
             self._logger = logging.getLogger(fn.__module__)
 
@@ -45,7 +50,7 @@ class LoggingDecorator(DecoratorMixin):
 class log_on_start(LoggingDecorator):
 
     def _do_logging(self, fn, *args, **kwargs):
-        logger = self.get_logger(fn)
+        logger = self.get_logger(fn, **kwargs)
         extensive_kwargs = self.build_extensive_kwargs(fn, *args, **kwargs)
         msg = self.message.format(**extensive_kwargs)
 
@@ -64,7 +69,7 @@ class log_on_end(LoggingDecorator):
         self.result_format_variable = result_format_variable
 
     def _do_logging(self, fn, result, *args, **kwargs):
-        logger = self.get_logger(fn)
+        logger = self.get_logger(fn, **kwargs)
         extensive_kwargs = self.build_extensive_kwargs(fn, *args, **kwargs)
         extensive_kwargs[self.result_format_variable] = result
         msg = self.message.format(**extensive_kwargs)
@@ -89,7 +94,7 @@ class log_on_error(LoggingDecorator):
         self.exception_format_variable = exception_format_variable
 
     def _do_logging(self, fn, exception, *args, **kwargs):
-        logger = self.get_logger(fn)
+        logger = self.get_logger(fn, **kwargs)
         extensive_kwargs = self.build_extensive_kwargs(fn, *args, **kwargs)
         extensive_kwargs[self.exception_format_variable] = exception
         msg = self.message.format(**extensive_kwargs)
