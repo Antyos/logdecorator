@@ -182,3 +182,16 @@ class TestDecorators(TestCase):
         fn = dec(async_test_func)
         self.loop.run_until_complete(fn(2, "asd"))
         self.assertEqual(self.logger.exception.call_count, 1)
+
+    def test_logger_from_function_args(self):
+        kwlogger = logging.Logger('kwarg_logger')
+        kwlog_handler = MockLoggingHandler()
+        kwlog_handler.setFormatter("%(msg)s")
+        kwlogger.addHandler(kwlog_handler)
+        
+        dec = log_on_start(logging.INFO,
+                           "test message {arg1:d}, {arg2:d}",
+                           logger='kwarg1')
+        fn = dec(test_func)
+        fn(1, 2, kwarg1=kwlogger)
+        self.assertIn("test message 1, 2", kwlog_handler.messages["info"])
