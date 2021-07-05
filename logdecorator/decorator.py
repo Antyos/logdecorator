@@ -30,9 +30,6 @@ class LoggingDecorator(DecoratorMixin):
 
     def get_logger(self, fn, **kwargs):
         if isinstance(self._logger, str):
-            if self._logger not in kwargs:
-                raise ValueError(f"Unable to find keyword '{self._logger}'"
-                                  " in function arguments for logger.")
             self._logger = kwargs.get(self._logger, None)
         if self._logger is None:
             self._logger = logging.getLogger(fn.__module__)
