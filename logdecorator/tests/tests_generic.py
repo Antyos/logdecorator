@@ -191,7 +191,16 @@ class TestDecorators(TestCase):
         
         dec = log_on_start(logging.INFO,
                            "test message {arg1:d}, {arg2:d}",
-                           logger='kwarg1')
+                           logger="kwarg1")
         fn = dec(test_func)
         fn(1, 2, kwarg1=kwlogger)
         self.assertIn("test message 1, 2", kwlog_handler.messages["info"])
+
+    def test_missing_logger_function_args(self):
+        dec = log_on_start(logging.INFO,
+                           "test message {arg1:d}, {arg2:d}",
+                           logger="invalid_argument")
+        fn = dec(test_func)
+        # Make sure this doesn't raise an error by attempting to call a
+        # logger that doesn't exist
+        fn(1,2)
